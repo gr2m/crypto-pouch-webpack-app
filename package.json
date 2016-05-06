@@ -1,0 +1,23 @@
+{
+  "name": "crypto-pouch-webpack-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "db": "pouchdb-server -m -p 8079",
+    "start": "webpack-dev-server --progress --colors"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "pouchdb-server": "^1.1.1",
+    "webpack": "^1.13.0",
+    "webpack-dev-server": "^1.14.1"
+  },
+  "dependencies": {
+    "crypto-pouch": "^2.0.0",
+    "pouchdb": "^5.3.2"
+  }
+}
