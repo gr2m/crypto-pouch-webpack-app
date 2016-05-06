@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "crypto-pouch": "^2.0.0",
-    "pouchdb": "^5.3.2"
+    "css-loader": "^0.23.1",
+    "pouchdb": "^5.3.2",
+    "style-loader": "^0.13.1"
   }
 }
