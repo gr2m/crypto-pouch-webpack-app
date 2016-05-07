@@ -15,6 +15,7 @@ function initDbView ($container, db, otherDb) {
   var $log = $container.querySelector('.log')
   var $putBtn = $container.querySelector('.put-btn')
   var $putAttachmentBtn = $container.querySelector('.put-attachment-btn')
+  var $bulkDocsBtn = $container.querySelector('.bulk-docs-btn')
   var $syncBtn = $container.querySelector('.sync-btn')
   var $clearBtn = $container.querySelector('.clear-btn')
 
@@ -32,7 +33,12 @@ function initDbView ($container, db, otherDb) {
   $table.addEventListener('click', function (event) {
     var id = findId(event.target)
     db.get(id).then(function (doc) {
-      doc.test = 'check ' + (parseInt(doc.test.substr('check '.length), 10) + 1)
+      // putAttachment does not set .test property
+      if (doc.test) {
+        doc.test = 'check ' + (parseInt(doc.test.substr('check '.length), 10) + 1)
+      } else {
+        doc.test = 'check 1'
+      }
       db.put(doc)
     }).catch(function () {
       log('cannot update deleted doc')
@@ -51,6 +57,30 @@ function initDbView ($container, db, otherDb) {
         }
       }
     })
+  })
+
+  $bulkDocsBtn.addEventListener('click', function () {
+    var id1 = Math.random().toString(36).substr(2, 5)
+    var id2 = Math.random().toString(36).substr(2, 5)
+    db.bulkDocs([{
+      _id: id1,
+      test: 'check 1',
+      _attachments: {
+        'check.png': {
+          content_type: 'image/png',
+          data: base64Data
+        }
+      }
+    }, {
+      _id: id2,
+      test: 'check 1',
+      _attachments: {
+        'check.png': {
+          content_type: 'image/png',
+          data: base64Data
+        }
+      }
+    }])
   })
 
   $putAttachmentBtn.addEventListener('click', function () {
