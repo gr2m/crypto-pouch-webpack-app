@@ -1,3 +1,66 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 body {
   font: 18px/1.5 Arial;
+}
+
+h1 {
+  font-size: 1.4em;
+  text-align: center;
+  padding: 1em;
+  background: #eee;
+  border-bottom: 2px solid #ddd;
+}
+
+h2 {
+  font-size: 1em;
+}
+
+button {
+  font-size: .8em;
+  padding: .2em .4em;
+  border: 1px solid #ccc;
+  background: #ddd;
+}
+
+.local, .remote {
+  padding: 1em;
+}
+.local {
+  float: left;
+  width: 50%;
+}
+.remote {
+  float: right;
+  width: 50%;
+  border-left: 1px solid #ddd;
+}
+
+.data {
+  width: 100%;
+  margin: 1em 0;
+  border-bottom: 1px solid #eee;
+}
+.data th, .data td {
+  padding: 1em 0;
+  border-top: 1px solid #eee;
+}
+[data-state="new"] th, [data-state="new"] td {
+  background: #693;
+}
+[data-state="updated"] th, [data-state="updated"] td {
+  background: #cc0;
+}
+[data-state="deleted"] th, [data-state="deleted"] td {
+  background: #c00;
+}
+.data th {
+  width: 1px;
+  padding-right: 1em;
+}
+.data th:before {
+  content: '#'
 }

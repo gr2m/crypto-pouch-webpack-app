@@ -1,8 +1,20 @@
+/* global URL, Blob, atob */
 module.exports = initDbView
 
+var base64Data = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICA' +
+                 'gIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAL9JREFUOI2d07FtAkEQ' +
+                 'heEPRAGEBHTgAhwTUQI0gIQDV0IZThwTUQAIAmKgAAJCy3ZowAELOi23tx' +
+                 'xPmmC07/27Gu3AG35xztSnErUwwRGLMkNBu6jvYynQ55lwrAH+MHsGcA1/' +
+                 '4bUu4C5cB1AajgFtvNcJx4CP0E8eCE+xjwEdbAuQYcXNq+C7m0ERck49uw' +
+                 'pQhKTCN0ArcXhAD12sEx5cvnJKh1CVauYMOTVcNvGETc3sizDEMX7k1zmu' +
+                 'b4z+ASn4V7TGZOqTAAAAAElFTkSuQmCC'
+var attachment = new Blob([b64toBlob(base64Data)], {type: 'image/png'})
+
 function initDbView ($container, db, otherDb) {
+  var $table = $container.querySelector('table.data')
   var $log = $container.querySelector('.log')
-  var $addBtn = $container.querySelector('.add-btn')
+  var $putBtn = $container.querySelector('.put-btn')
+  var $putAttachmentBtn = $container.querySelector('.put-attachment-btn')
   var $syncBtn = $container.querySelector('.sync-btn')
   var $clearBtn = $container.querySelector('.clear-btn')
 
@@ -17,10 +29,25 @@ function initDbView ($container, db, otherDb) {
     $log.textContent = text + '\n' + $log.textContent
   }
 
-  $addBtn.addEventListener('click', function () {
+  $putBtn.addEventListener('click', function () {
     var id = Math.random().toString(36).substr(2, 5)
-    db.put({foo: 'bar'}, id)
+    db.put({
+      _id: id,
+      test: 'check',
+      _attachments: {
+        'check.png': {
+          content_type: 'image/png',
+          data: base64Data
+        }
+      }
+    })
   })
+
+  $putAttachmentBtn.addEventListener('click', function () {
+    var id = Math.random().toString(36).substr(2, 5)
+    db.putAttachment(id, 'check.png', attachment, 'image/png')
+  })
+
   $syncBtn.addEventListener('click', function () {
     db.replicate.to(otherDb)
     .on('complete', function (result) {
@@ -45,26 +72,39 @@ function initDbView ($container, db, otherDb) {
     })
   })
 
-  db.allDocs({include_docs: true})
+  db.allDocs({
+    include_docs: true,
+    attachments: true,
+    binary: true
+  })
 
   .then(function (result) {
-    log(result.rows.length + ' documents found', toDocs(result))
+    var docs = toDocs(result)
+    log(result.rows.length + ' documents found', docs)
+    docs.forEach(addRow.bind(null, $table))
 
     db.changes({
       include_docs: true,
       since: 'now',
-      live: true
+      live: true,
+      attachments: true,
+      binary: true
     }).on('change', function (change) {
       var isNew = parseInt(change.doc._rev, 10) === 1
+      var $tr = $table.querySelector('[data-id="' + change.id + '"]') || addRow($table, change.doc)
 
       if (change.deleted) {
-        return log(change.id + ' deleted', change.doc)
+        $tr.dataset.state = 'deleted'
+        log('#' + change.id + ' deleted', change.doc)
+        return
       }
 
       if (isNew) {
-        log(change.id + ' created', change.doc)
+        $tr.dataset.state = 'new'
+        log('#' + change.id + ' created', change.doc)
       } else {
-        log(change.id + ' updated', change.doc)
+        $tr.dataset.state = 'updated'
+        log('#' + change.id + ' updated', change.doc)
       }
     })
   })
@@ -74,4 +114,46 @@ function toDocs (result) {
   return result.rows.map(function (row) {
     return row.doc
   })
+}
+
+function addRow ($table, doc) {
+  var $tr = document.createElement('tr')
+  $tr.dataset.id = doc._id
+
+  // when you create and delete a document, and sync it after you delete, a change
+  // still occurs on the remote database, but it has not _attachments property.
+  var img = '-'
+  if (doc._attachments) {
+    var src = URL.createObjectURL(doc._attachments['check.png'].data)
+    img = '<img src="' + src + '"></td>'
+  }
+
+  $tr.innerHTML = '<th>' + doc._id + '</th><td>' + (doc.test || '-') + ' ' + img
+  $table.appendChild($tr)
+  return $tr
+}
+
+// http://stackoverflow.com/questions/16245767/creating-a-blob-from-a-base64-string-in-javascript
+function b64toBlob (b64Data, contentType, sliceSize) {
+  contentType = contentType || ''
+  sliceSize = sliceSize || 512
+
+  var byteCharacters = atob(b64Data)
+  var byteArrays = []
+
+  for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    var slice = byteCharacters.slice(offset, offset + sliceSize)
+
+    var byteNumbers = new Array(slice.length)
+    for (var i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i)
+    }
+
+    var byteArray = new Uint8Array(byteNumbers)
+
+    byteArrays.push(byteArray)
+  }
+
+  var blob = new Blob(byteArrays, {type: contentType})
+  return blob
 }
