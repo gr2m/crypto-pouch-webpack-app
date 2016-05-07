@@ -27,4 +27,4 @@ For debugging, you can access 3 PouchDB instances in the browser console:
 2. `cryptoDb` - local db with crypto
 3. `remoteDb`
 
-![demo](https://raw.githubusercontent.com/gr2m/crypto-pouch-webpack-app/master/bcrypto-pouch-test-app.gif)
+![demo](https://raw.githubusercontent.com/gr2m/crypto-pouch-webpack-app/master/crypto-pouch-test-app.gif)
