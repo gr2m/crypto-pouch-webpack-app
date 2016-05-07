@@ -4,7 +4,7 @@
   box-sizing: border-box;
 }
 body {
-  font: 18px/1.5 Arial;
+  font: 18px/1.5em Arial;
 }
 
 h1 {
@@ -26,6 +26,10 @@ button {
   background: #ddd;
 }
 
+img {
+  height: .8em;
+}
+
 .local, .remote {
   padding: 1em;
 }
@@ -40,26 +44,29 @@ button {
 }
 
 .data {
+  border-spacing: 0;
+  border-collapse: collapse;
   width: 100%;
   margin: 1em 0;
   border-bottom: 1px solid #eee;
 }
 .data th, .data td {
-  padding: 1em 0;
+  padding: .5em .5em;
   border-top: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color linear .3s;
 }
 [data-state="new"] th, [data-state="new"] td {
-  background: #693;
+  background-color: #E6FFCC;
 }
 [data-state="updated"] th, [data-state="updated"] td {
-  background: #cc0;
+  background-color: #FFFFCC;
 }
 [data-state="deleted"] th, [data-state="deleted"] td {
-  background: #c00;
+  background-color: #FFCCCC;
 }
 .data th {
   width: 1px;
-  padding-right: 1em;
 }
 .data th:before {
   content: '#'

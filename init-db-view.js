@@ -29,11 +29,21 @@ function initDbView ($container, db, otherDb) {
     $log.textContent = text + '\n' + $log.textContent
   }
 
+  $table.addEventListener('click', function (event) {
+    var id = findId(event.target)
+    db.get(id).then(function (doc) {
+      doc.test = 'check ' + (parseInt(doc.test.substr('check '.length), 10) + 1)
+      db.put(doc)
+    }).catch(function () {
+      log('cannot update deleted doc')
+    })
+  })
+
   $putBtn.addEventListener('click', function () {
     var id = Math.random().toString(36).substr(2, 5)
     db.put({
       _id: id,
-      test: 'check',
+      test: 'check 1',
       _attachments: {
         'check.png': {
           content_type: 'image/png',
@@ -104,6 +114,7 @@ function initDbView ($container, db, otherDb) {
         log('#' + change.id + ' created', change.doc)
       } else {
         $tr.dataset.state = 'updated'
+        $tr.innerHTML = toRowHtml(change.doc)
         log('#' + change.id + ' updated', change.doc)
       }
     })
@@ -116,10 +127,7 @@ function toDocs (result) {
   })
 }
 
-function addRow ($table, doc) {
-  var $tr = document.createElement('tr')
-  $tr.dataset.id = doc._id
-
+function toRowHtml (doc) {
   // when you create and delete a document, and sync it after you delete, a change
   // still occurs on the remote database, but it has not _attachments property.
   var img = '-'
@@ -128,7 +136,14 @@ function addRow ($table, doc) {
     img = '<img src="' + src + '"></td>'
   }
 
-  $tr.innerHTML = '<th>' + doc._id + '</th><td>' + (doc.test || '-') + ' ' + img
+  return '<th>' + doc._id + '</th><td>' + (doc.test || '-') + ' ' + img
+}
+
+function addRow ($table, doc) {
+  var $tr = document.createElement('tr')
+  $tr.dataset.id = doc._id
+
+  $tr.innerHTML = toRowHtml(doc)
   $table.appendChild($tr)
   return $tr
 }
@@ -156,4 +171,8 @@ function b64toBlob (b64Data, contentType, sliceSize) {
 
   var blob = new Blob(byteArrays, {type: contentType})
   return blob
+}
+
+function findId ($target) {
+  return $target.dataset.id || findId($target.parentNode)
 }
